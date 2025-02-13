@@ -39,6 +39,39 @@ pub fn commit_proof_pairs(vkeys: &[[u32; 8]], committed_values: &[Vec<u8>]) -> V
     res
 }
 
+enum HashFn {
+    Sha2,
+    Sha3,
+    Keccak,
+}
+
+use tiny_keccak::{Hasher, Keccak, Sha3};
+
+/// Hashes the input data using a Keccak hasher with a 256-bit security level.
+pub fn hash(data: &[u8]) -> [u8; 32] {
+    let hash_fn = HashFn::Sha2;
+
+    match hash_fn {
+        HashFn::Sha2 => Sha256::digest(data).into(),
+        HashFn::Sha3 => {
+            let mut hasher = Sha3::v256();
+            hasher.update(data);
+
+            let mut output = [0u8; 32];
+            hasher.finalize(&mut output);
+            output
+        }
+        HashFn::Keccak => {
+            let mut hasher = Keccak::v256();
+            hasher.update(data);
+
+            let mut output = [0u8; 32];
+            hasher.finalize(&mut output);
+            output
+        }
+    }
+}
+
 pub fn main() {
     // Read the verification keys.
     let vkeys = sp1_zkvm::io::read::<Vec<[u32; 8]>>();
@@ -51,7 +84,7 @@ pub fn main() {
     for i in 0..vkeys.len() {
         let vkey = &vkeys[i];
         let public_values = &public_values[i];
-        let public_values_digest = Sha256::digest(public_values);
+        let public_values_digest = hash(public_values);
         sp1_zkvm::lib::verify::verify_sp1_proof(vkey, &public_values_digest.into());
     }
 

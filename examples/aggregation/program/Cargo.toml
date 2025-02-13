@@ -6,4 +6,8 @@ publish = false
 
 [dependencies]
 sha2 = "0.10.8"
+tiny-keccak = { git = "https://github.com/sp1-patches/tiny-keccak", tag = "patch-2.0.2-sp1-4.0.0", features = [
+    "keccak",
+    "sha3",
+] }
 sp1-zkvm = { path = "../../../crates/zkvm/entrypoint", features = ["verify"] }
